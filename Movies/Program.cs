@@ -1,7 +1,9 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using Movies.Data;
 using Movies.Models;
+using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -18,6 +20,15 @@ builder.Services.AddIdentity<User, IdentityRole>()
 
 // Register SeedData as a service
 builder.Services.AddScoped<SeedData>();
+
+// Configure Logging
+builder.Logging.ClearProviders(); // Remove the default logging providers
+
+Log.Logger = new LoggerConfiguration()
+    .WriteTo.File("app.log")
+    .CreateLogger();
+
+builder.Logging.AddSerilog();
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
