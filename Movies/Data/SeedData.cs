@@ -3,6 +3,10 @@ using Microsoft.AspNetCore.Identity;
 using MovieMaker.Models;
 using Movies.Models;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Movies.Data
 {
@@ -11,58 +15,88 @@ namespace Movies.Data
         private readonly UserManager<User> _userManager;
         private readonly DataContext _dataContext;
         private readonly RoleManager<IdentityRole> _roleManager;
+        private readonly ILogger<SeedData> _logger;
 
-        public SeedData(UserManager<User> userManager, DataContext dataContext, RoleManager<IdentityRole> roleManager)
+        public SeedData(
+            UserManager<User> userManager,
+            DataContext dataContext,
+            RoleManager<IdentityRole> roleManager,
+            ILogger<SeedData> logger)
         {
             _userManager = userManager;
             _dataContext = dataContext;
             _roleManager = roleManager;
+            _logger = logger;
         }
 
         public async Task SeedDataAsync()
         {
-            if (!_dataContext.Movies.Any() && !_dataContext.Users.Any())
+            try
             {
                 // Ensure role Admin exists
-                var roleExists = await _roleManager.RoleExistsAsync("Admin");
-                if (!roleExists)
-                {
-                    await _roleManager.CreateAsync(new IdentityRole("Admin"));
-                }
+                await SeedRolesAsync();
 
                 // Seed Users
-                var users = new[]
-                {
-                    new User
-                    {
-                        UserName = "User1",
-                        Email = "user1@example.com",
-                    },
-                    new User
-                    {
-                        UserName = "User2",
-                        Email = "user2@example.com",
-                    },
-                };
-
-                foreach (var user in users)
-                {
-                    var userCreationResult = await _userManager.CreateAsync(user, "Password123!");
-                    if (userCreationResult.Succeeded && user.UserName == "User1")
-                    {
-                        await _userManager.AddToRoleAsync(user, "Admin");
-                    }
-                }
-
-                await _dataContext.SaveChangesAsync();
-
-                // Get created users with their IDs
-                var createdUsers = await _dataContext.Users.ToListAsync();
+                var createdUsers = await SeedUsersAsync();
 
                 // Seed Movies
-                var movies = new[]
+                await SeedMoviesAsync(createdUsers);
+            }
+            catch (Exception ex)
+            {
+                // Log the exception
+                _logger.LogError($"An error occurred during seed data: {ex.Message}");
+                // Handle the exception or rethrow it depending on your needs
+            }
+        }
+
+        private async Task SeedRolesAsync()
+        {
+            if (!await _roleManager.RoleExistsAsync("Admin"))
+            {
+                await _roleManager.CreateAsync(new IdentityRole("Admin"));
+            }
+        }
+
+        private async Task<List<User>> SeedUsersAsync()
+        {
+            var users = new[]
+            {
+                new User
                 {
-                    new Movie
+                    UserName = "User1",
+                    Email = "user1@example.com",
+                },
+                new User
+                {
+                    UserName = "User2",
+                    Email = "user2@example.com",
+                },
+            };
+
+            var createdUsers = new List<User>();
+
+            foreach (var user in users)
+            {
+                var userCreationResult = await _userManager.CreateAsync(user, "Password123!");
+                if (userCreationResult.Succeeded && user.UserName == "User1")
+                {
+                    await _userManager.AddToRoleAsync(user, "Admin");
+                }
+
+                // Add the user to the list whether or not creation is successful
+                createdUsers.Add(user);
+            }
+
+            await _dataContext.SaveChangesAsync(); // Save changes after seeding users
+            return createdUsers;
+        }
+
+        private async Task SeedMoviesAsync(List<User> createdUsers)
+        {
+            var movies = new[]
+            {
+                 new Movie
                     {
                         Title = "Movie 1",
                         Description = "Description 1",
@@ -118,10 +152,9 @@ namespace Movies.Data
                     }
 
                 };
-                _dataContext.Movies.AddRange(movies);
-                await _dataContext.SaveChangesAsync();
 
-            }
+            _dataContext.Movies.AddRange(movies);
+            await _dataContext.SaveChangesAsync();
         }
     }
 }
