@@ -10,6 +10,9 @@ using System.Security.Claims;
 
 namespace Movies.Controllers
 {
+    /// <summary>
+    /// Controller for managing movie-related operations.
+    /// </summary>
     public class MovieController : Controller
     {
         private readonly MovieRepository _movieRepository;
@@ -22,8 +25,12 @@ namespace Movies.Controllers
             _userRepository = userRepository;
         }
 
-        [HttpGet("Reviews")]
-        public async Task<IActionResult> GetAllReviews()
+        /// <summary>
+        /// Gets all movies.
+        /// </summary>
+        /// <returns>List of movies.</returns>
+        [HttpGet("Movies")]
+        public async Task<IActionResult> GetAllMovies()
         {
             try
             {
@@ -44,7 +51,12 @@ namespace Movies.Controllers
 
         }
 
-        [HttpGet("Review/{id}")]
+        /// <summary>
+        /// Gets a movie by ID.
+        /// </summary>
+        /// <param name="id">The ID of the movie.</param>
+        /// <returns>The movie with the specified ID.</returns>
+        [HttpGet("Movie/{id}")]
         public async Task<IActionResult> GetMovieById(int id)
         {
             try
@@ -65,17 +77,22 @@ namespace Movies.Controllers
             }
         }
 
+        /// <summary>
+        /// Creates a new movie.
+        /// </summary>
+        /// <param name="movieDto">The movie data.</param>
+        /// <returns>The newly created movie.</returns>
         [Authorize]
         [HttpPost("CreateReview")]
         public async Task<IActionResult> CreateMovie(MovieDto movieDto)
         {
             // Get the currently logged-in user's info
-            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            var loggedUser = await _userRepository.GetUserByIdAsync(userId);
+            var LoggedUserId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var loggedUser = await _userRepository.GetUserByIdAsync(LoggedUserId);
 
-            if (userId == null || loggedUser == null)
+            if (LoggedUserId == null || loggedUser == null)
             {
-                return NotFound("Échec de la création du commentaire.");
+                return BadRequest("Échec de la création du commentaire.");
             }
 
             if (!ModelState.IsValid)
@@ -93,7 +110,7 @@ namespace Movies.Controllers
                     Author = movieDto.Author,
                     Genre = Enum.Parse<MovieGenre>(movieDto.Genre), // parse the value to convert them to appropriate types
                     DateOfRelease = DateTime.ParseExact(movieDto.DateOfRelease, "dd-MM-yyyy", CultureInfo.InvariantCulture), // parse the value to convert them to appropriate types
-                    UserId = userId,
+                    UserId = LoggedUserId,
                     User = loggedUser
                 };
 
@@ -115,6 +132,12 @@ namespace Movies.Controllers
             }
         }
 
+        /// <summary>
+        /// Updates an existing movie.
+        /// </summary>
+        /// <param name="id">The ID of the movie to update.</param>
+        /// <param name="movieDto">The updated movie data.</param>
+        /// <returns>The updated movie.</returns>
         [Authorize]
         [HttpPut("UpdateReview/{id}")]
         public async Task<IActionResult> UpdateMovie(int id, MovieDto movieDto)
@@ -122,6 +145,14 @@ namespace Movies.Controllers
             if (!await _movieRepository.DoesMovieExists(id))
             {
                 return NotFound("an error occurred while updating the movie.");
+            }
+
+            var movieToDelete = await _movieRepository.GetMovieByIdAsync(id);
+            var LoggedUserId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            if (LoggedUserId == null || LoggedUserId != movieToDelete.UserId)
+            {
+                return BadRequest("An error occurred while updating the movie.");
             }
 
             if (!ModelState.IsValid)
@@ -154,6 +185,11 @@ namespace Movies.Controllers
             }
         }
 
+        /// <summary>
+        /// Filters movies based on a search string.
+        /// </summary>
+        /// <param name="str">The search string.</param>
+        /// <returns>The filtered list of movies.</returns>
         [HttpGet("FilteredReviews")]
         public async Task<IActionResult> FilterMovies(string str)
         {
@@ -184,6 +220,12 @@ namespace Movies.Controllers
             }
         }
 
+        /// <summary>
+        /// Deletes a movie by ID.
+        /// </summary>
+        /// <param name="id">The ID of the movie to delete.</param>
+        /// <returns>Result of the delete operation.</returns>
+        [Authorize]
         [HttpDelete("DeleteMovie")]
         public async Task<IActionResult> DeleteMovie(int id)
         {
@@ -191,6 +233,14 @@ namespace Movies.Controllers
             if (!await _movieRepository.DoesMovieExists(id)) 
             {
                 return NotFound("An error occurred while deleting the movie.");
+            }
+
+            var movieToDelete = await _movieRepository.GetMovieByIdAsync(id);
+            var LoggedUserId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            if (LoggedUserId == null || LoggedUserId != movieToDelete.UserId)
+            {
+                return BadRequest("Échec de la suppression du commentaire.");
             }
 
             try
@@ -212,6 +262,11 @@ namespace Movies.Controllers
             }
         }
 
+        /// <summary>
+        /// Converts a <see cref="Movie"/> object to a <see cref="MovieDto"/>.
+        /// </summary>
+        /// <param name="movie">The movie object.</param>
+        /// <returns>The movie DTO.</returns>
         private MovieDto ConvertToMovieDto(Movie movie)
         {
             return new MovieDto
