@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace Movies.DTO
+namespace MovieMaker.DTO
 {
     public class UserToDisplayDto
     {
@@ -9,5 +9,6 @@ namespace Movies.DTO
         [Required]
         [EmailAddress]
         public string Email { get; set; }
+        public bool IsUserAdmin { get; set; } = false;
     }
 }

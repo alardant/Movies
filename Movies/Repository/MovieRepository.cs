@@ -1,9 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using MovieMaker.Models;
-using Movies.Data;
-using Movies.Models;
+using MovieMaker.Data;
 
-namespace Movies.Repository
+namespace MovieMaker.Repository
 {
     /// <summary>
     /// Repository for managing movies.

@@ -2,15 +2,16 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Movies.Data;
-using Movies.Models;
-using Movies.Repository;
+using MovieMaker.Models;
+using MovieMaker.Repository;
 using Serilog;
 using System.Reflection;
 using System.IO;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
-using Movies.Services;
+using MovieMaker.Services;
+using MovieMaker.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -80,6 +81,8 @@ builder.Services.AddAuthentication(options =>
 builder.Services.AddScoped<MovieRepository>();
 builder.Services.AddScoped<UserRepository>();
 builder.Services.AddScoped<AuthService>();
+builder.Services.AddScoped<MovieService>();
+builder.Services.AddScoped<UserService>();
 
 var app = builder.Build();
 

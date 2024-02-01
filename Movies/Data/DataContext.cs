@@ -2,9 +2,8 @@
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using MovieMaker.Models;
-using Movies.Models;
 
-namespace Movies.Data
+namespace MovieMaker.Data
 {
     public class DataContext : IdentityDbContext<User>
     {
