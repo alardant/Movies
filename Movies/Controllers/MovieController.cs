@@ -13,11 +13,18 @@ namespace Movies.Controllers
     /// <summary>
     /// Controller for managing movie-related operations.
     /// </summary>
-    public class MovieController : Controller
+    public class MovieController : ControllerBase
     {
         private readonly MovieRepository _movieRepository;
         private readonly UserRepository _userRepository;
         private readonly ILogger<MovieController> _logger;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="MovieController"/> class.
+        /// </summary>
+        /// <param name="movieRepository">The repository for managing movie-related data.</param>
+        /// <param name="userRepository">The repository for managing user-related data.</param>
+        /// <param name="logger">The logger for capturing and logging controller-related events.</param>
         public MovieController(MovieRepository movieRepository, UserRepository userRepository, ILogger<MovieController> logger)
         {
             _movieRepository = movieRepository;
@@ -38,7 +45,7 @@ namespace Movies.Controllers
                 var moviesDto = new List<MovieDto>();
                 foreach (Movie movie in movies)
                 {
-                    var movieDto = ConvertToMovieDto(movie);
+                    var movieDto = ConvertMovieToMovieDto(movie);
                     moviesDto.Add(movieDto);
                 }
                 return Ok(moviesDto);
@@ -67,7 +74,7 @@ namespace Movies.Controllers
                     _logger.LogError($"Movie with ID {id} not found.");
                     return NotFound($"An error occurred while fetching the movie.");
                 }
-                var movieDto = ConvertToMovieDto(movie);
+                var movieDto = ConvertMovieToMovieDto(movie);
                 return Ok(movieDto);
             }
             catch (Exception ex)
@@ -207,7 +214,7 @@ namespace Movies.Controllers
 
                 foreach (Movie filteredMovie in filteredMovies)
                 {
-                    var movieDto = ConvertToMovieDto(filteredMovie);
+                    var movieDto = ConvertMovieToMovieDto(filteredMovie);
                     filteredmoviesDto.Add(movieDto);
                 }
 
@@ -224,7 +231,6 @@ namespace Movies.Controllers
         /// Deletes a movie by ID.
         /// </summary>
         /// <param name="id">The ID of the movie to delete.</param>
-        /// <returns>Result of the delete operation.</returns>
         [Authorize]
         [HttpDelete("DeleteMovie")]
         public async Task<IActionResult> DeleteMovie(int id)
@@ -253,7 +259,7 @@ namespace Movies.Controllers
                     return StatusCode(500, "An error occurred while deleting the movie.");
                 }
 
-                return Ok("Movie successfully deleted");
+                return Ok();
 
             } catch (Exception ex)
             {
@@ -267,7 +273,7 @@ namespace Movies.Controllers
         /// </summary>
         /// <param name="movie">The movie object.</param>
         /// <returns>The movie DTO.</returns>
-        private MovieDto ConvertToMovieDto(Movie movie)
+        private MovieDto ConvertMovieToMovieDto(Movie movie)
         {
             return new MovieDto
             {

@@ -24,5 +24,14 @@ namespace Movies.Repository
         {
             return await _context.Users.FirstOrDefaultAsync(x => x.Id == Id);
         }
+
+        /// <summary>
+        /// Gets all users .
+        /// </summary>
+        /// <returns>List of users.</returns>
+        public async Task<ICollection<User>> GetAllUsersAsync()
+        {
+            return await _context.Users.ToListAsync();
+        }
     }
 }

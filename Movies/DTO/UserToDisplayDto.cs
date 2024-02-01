@@ -1,0 +1,13 @@
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace Movies.DTO
+{
+    public class UserToDisplayDto
+    {
+        [Required]
+        public string Username { get; set; }
+        [Required]
+        [EmailAddress]
+        public string Email { get; set; }
+    }
+}
