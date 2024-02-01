@@ -4,8 +4,14 @@ using UsersMovieMaker.DTO;
 
 namespace MovieMaker.Services
 {
+    /// <summary>
+    /// Service for managing users.
+    /// </summary>
     public class UserService
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="UserService"/> class.
+        /// </summary>
         public UserService() { }
 
         /// <summary>
@@ -23,6 +29,11 @@ namespace MovieMaker.Services
             };
         }
 
+        /// <summary>
+        /// Converts a <see cref="UserDto"/> object to a <see cref="User"/>.
+        /// </summary>
+        /// <param name="userDto">The user Dto object.</param>
+        /// <returns>The user to display DTO.</returns>
         public User ConvertUserDtoToUser(UserDto userDto)
         {
             return new User

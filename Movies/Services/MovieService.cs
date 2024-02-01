@@ -3,8 +3,14 @@ using MovieMaker.Models;
 
 namespace MovieMaker.Services
 {
+    /// <summary>
+    /// Service for managing movies.
+    /// </summary>
     public class MovieService
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="MovieService"/> class.
+        /// </summary>
         public MovieService() { }
 
         /// <summary>

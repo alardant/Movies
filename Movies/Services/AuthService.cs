@@ -11,20 +11,27 @@ using MovieMaker.Repository;
 
 namespace MovieMaker.Services
 {
+    /// <summary>
+    /// Service for managing authentication.
+    /// </summary>
     public class AuthService
     {
 
         private readonly RoleManager<IdentityRole> _roleManager;
         private readonly UserManager<IdentityUser> _userManager;
-        private readonly UserRepository _userRepository;
         private readonly IConfiguration _config;
 
-        public AuthService(RoleManager<IdentityRole> roleManager, UserManager<IdentityUser> userManager, IConfiguration config, UserRepository userRepository)
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AuthService"/> class.
+        /// </summary>
+        /// <param name="roleManager">The <see cref="RoleManager{TRole}"/> used for role management.</param>
+        /// <param name="userManager">The <see cref="UserManager{TUser}"/> used for user management.</param>
+        /// <param name="config">The <see cref="IConfiguration"/> used for configuration settings.</param>
+        public AuthService(RoleManager<IdentityRole> roleManager, UserManager<IdentityUser> userManager, IConfiguration config)
         {
             _roleManager = roleManager;
             _userManager = userManager;
             _config = config;
-            _userRepository = userRepository;
         }
 
         /// <summary>
@@ -43,27 +50,7 @@ namespace MovieMaker.Services
 
             return await _userManager.CheckPasswordAsync(user, userDto.Password);
         }
-
-        /// <summary>
-        /// Creates a new user asynchronously.
-        /// </summary>
-        /// <param name="user">The user to be created.</param>
-        /// /// /// <param name="password">The user password.</param>
-        /// <returns>True if the user is created successfully; otherwise, false.</returns>
-        public async Task<bool> CreateUserAsync(User user, string password)
-        {
-            var isUserAdmin = user.IsUserAdmin;
-
-            if (isUserAdmin)
-            {
-                await AssignRolesAsync(user, isUserAdmin);
-
-            }
-
-            await _userManager.CreateAsync(user, password);
-            return _userRepository.Save();
-        }
-
+                
         /// <summary>
         /// Generate a JwoToken as a string
         /// </summary>
@@ -91,7 +78,6 @@ namespace MovieMaker.Services
             return tokenString;
         }
 
-
         /// <summary>
         /// Create roles if they don't exist.
         /// </summary>
@@ -105,6 +91,11 @@ namespace MovieMaker.Services
                 await _roleManager.CreateAsync(new IdentityRole("Admin"));
         }
 
+        /// <summary>
+        /// Asssign roles to user.
+        /// </summary>
+        /// /// <param name="user">the user data</param>
+        /// /// <param name="isUserAdmin">A bool to indicate if the user is admin or not</param>
         public async Task AssignRolesAsync(User user, bool isUserAdmin)
         {
             await CreateRolesAsync();
@@ -118,7 +109,6 @@ namespace MovieMaker.Services
                 await _userManager.AddToRoleAsync(user, "User");
             }
         }
-
 
     }
 

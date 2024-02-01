@@ -26,6 +26,7 @@ namespace Movies.Controllers
         /// <param name="movieRepository">The repository for managing movie-related data.</param>
         /// <param name="userRepository">The repository for managing user-related data.</param>
         /// <param name="logger">The logger for capturing and logging controller-related events.</param>
+        /// /// <param name="movieService">The service for managing movie-related operations.</param>
         public MovieController(MovieRepository movieRepository, UserRepository userRepository, ILogger<MovieController> logger, MovieService movieService)
         {
             _movieRepository = movieRepository;
@@ -83,6 +84,41 @@ namespace Movies.Controllers
             {
                 _logger.LogError($"An error occurred during retrieving data: {ex.Message}");
                 return StatusCode(500, "An error occurred while fetching the movie.");
+            }
+        }
+
+        /// <summary>
+        /// Filters movies based on a search string.
+        /// </summary>
+        /// <param name="str">The string used to research.</param>
+        /// <returns>The filtered list of movies.</returns>
+        [HttpGet("FilteredReviews")]
+        public async Task<IActionResult> FilterMovies(string str)
+        {
+            try
+            {
+                var allMovies = await _movieRepository.GetAllMoviesAsync();
+                var filteredMovies = allMovies
+                .Where(i => i.Title.ToLower().Contains(str.ToLower()) ||
+                    i.Description.ToLower().Contains(str.ToLower()) ||
+                    Enum.GetName(typeof(MovieGenre), i.Genre)?.ToLower().Contains(str.ToLower()) == true ||
+                    i.Author.ToLower().Contains(str.ToLower()))
+                .ToList();
+
+                var filteredmoviesDto = new List<MovieDto>();
+
+                foreach (Movie filteredMovie in filteredMovies)
+                {
+                    var movieDto = _movieService.ConvertMovieToMovieDto(filteredMovie);
+                    filteredmoviesDto.Add(movieDto);
+                }
+
+                return Ok(filteredmoviesDto);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"An error occurred during retrieving data: {ex.Message}");
+                return StatusCode(500, "An error occurred while retrieving movies.");
             }
         }
 
@@ -196,44 +232,10 @@ namespace Movies.Controllers
         }
 
         /// <summary>
-        /// Filters movies based on a search string.
-        /// </summary>
-        /// <param name="str">The search string.</param>
-        /// <returns>The filtered list of movies.</returns>
-        [HttpGet("FilteredReviews")]
-        public async Task<IActionResult> FilterMovies(string str)
-        {
-            try
-            {
-                var allMovies = await _movieRepository.GetAllMoviesAsync();
-                var filteredMovies = allMovies
-                .Where(i => i.Title.ToLower().Contains(str.ToLower()) ||
-                    i.Description.ToLower().Contains(str.ToLower()) ||
-                    Enum.GetName(typeof(MovieGenre), i.Genre)?.ToLower().Contains(str.ToLower()) == true ||
-                    i.Author.ToLower().Contains(str.ToLower()))
-                .ToList();
-
-                var filteredmoviesDto = new List<MovieDto>();
-
-                foreach (Movie filteredMovie in filteredMovies)
-                {
-                    var movieDto = _movieService.ConvertMovieToMovieDto(filteredMovie);
-                    filteredmoviesDto.Add(movieDto);
-                }
-
-                return Ok(filteredmoviesDto);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError($"An error occurred during retrieving data: {ex.Message}");
-                return StatusCode(500, "An error occurred while retrieving movies.");
-            }
-        }
-
-        /// <summary>
         /// Deletes a movie by ID.
         /// </summary>
         /// <param name="id">The ID of the movie to delete.</param>
+        /// <returns>True if the movie is deleted; false otherwise</returns>
         [Authorize]
         [HttpDelete("DeleteMovie")]
         public async Task<IActionResult> DeleteMovie(int id)
@@ -262,7 +264,7 @@ namespace Movies.Controllers
                     return StatusCode(500, "An error occurred while deleting the movie.");
                 }
 
-                return Ok();
+                return Ok(isMovieDeleted);
 
             } catch (Exception ex)
             {

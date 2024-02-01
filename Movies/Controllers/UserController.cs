@@ -17,7 +17,7 @@ namespace MovieMaker.Controllers
     /// </summary>
     public class UserController : ControllerBase
     {
-        
+
         private readonly SignInManager<IdentityUser> _signInManager;
         private readonly AuthService _authService;
         private readonly UserService _userService;
@@ -27,11 +27,12 @@ namespace MovieMaker.Controllers
         /// <summary>
         /// Initializes a new instance of the <see cref="UserController"/> class.
         /// </summary>
-        /// <param name="signInManager">The SignInManager for handling user sign-in operations.</param>
+        /// <param name="signInManager">The <see cref="SignInManager{IdentityUser}"/> for handling user sign-in operations.</param>
         /// <param name="authService">The service providing authentication-related functionality.</param>
         /// <param name="logger">The logger for capturing and logging controller-related events.</param>
         /// <param name="userRepository">The repository for managing user-related data.</param>
-        public UserController (SignInManager<IdentityUser> signInManager, AuthService authService, ILogger<UserController> logger, UserRepository userRepository, UserService userService)
+        /// <param name="userService">The service for managing user-related operations.</param>
+        public UserController(SignInManager<IdentityUser> signInManager, AuthService authService, ILogger<UserController> logger, UserRepository userRepository, UserService userService)
         {
             _signInManager = signInManager;
             _authService = authService;
@@ -73,7 +74,7 @@ namespace MovieMaker.Controllers
         /// <param name="userDto">the user data</param>
         /// <returns>A Jwt token as a string</returns>
         [HttpPost("Login")]
-        public async Task<IActionResult> Login (UserDto userDto)
+        public async Task<IActionResult> Login(UserDto userDto)
         {
             if (!ModelState.IsValid)
             {
@@ -93,17 +94,19 @@ namespace MovieMaker.Controllers
                 var tokenString = await _authService.GenerateJwtTokenAsString(user);
 
                 return Ok(tokenString);
-            } catch (Exception ex)
+            }
+            catch (Exception ex)
             {
                 _logger.LogError($"An error occurred while logging in: {ex.Message}");
                 return StatusCode(500, "An error occurred while logging in.");
             }
-            
+
         }
 
         /// <summary>
         /// Logout a user 
         /// </summary>
+        /// /// <returns>A message to say that the user has been logged out</returns>
         [Authorize]
         [HttpPost("Logout")]
         public async Task<IActionResult> Logout()
@@ -111,7 +114,7 @@ namespace MovieMaker.Controllers
             try
             {
                 await _signInManager.SignOutAsync();
-                return Ok();
+                return Ok("User successfully log out");
 
             }
             catch (Exception ex)
@@ -125,7 +128,7 @@ namespace MovieMaker.Controllers
         /// Creates a new user.
         /// </summary>
         /// <param name="userDto">The user data.</param>
-        /// <returns>The newly user.</returns>
+        /// <returns>The created user dto to display and the Jwt token.</returns>
         [HttpPost("CreateUser")]
         public async Task<IActionResult> CreateUser(UserDto userDto)
         {
@@ -145,7 +148,7 @@ namespace MovieMaker.Controllers
 
                 var password = userDto.Password;
 
-                var iUserCreated = await _authService.CreateUserAsync(user, password);
+                var iUserCreated = await _userRepository.CreateUserAsync(user, password);
 
                 if (!iUserCreated)
                 {
@@ -200,7 +203,7 @@ namespace MovieMaker.Controllers
 
                 if (!isUserUpdated)
                 {
-                    _logger.LogError($"An error occurred during updating data");
+                    _logger.LogError($"An error occurred while updating data");
                     return StatusCode(500, "An error occurred while updating the user.");
                 }
 
@@ -209,8 +212,39 @@ namespace MovieMaker.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError($"An error occurred during updating data: {ex.Message}");
+                _logger.LogError($"An error occurred while updating data: {ex.Message}");
                 return StatusCode(500, "An error occurred while updating the user.");
+            }
+        }
+
+        /// <summary>
+        /// Delete a user 
+        /// </summary>
+        /// <param name="id">the Id of the user to delete</param>
+        /// <returns>True if the user is deleted; false otherwise</returns>
+        public async Task<IActionResult> DeleteUser(string id)
+        {
+            if (string.IsNullOrWhiteSpace(id))
+            {
+                return BadRequest("An error occurred while deleting the user.");
+            }
+
+
+            try
+            {
+                var result = await _userRepository.DeleteUserAsync(id);
+
+                if (!result)
+                {
+                    return StatusCode(500, "An error occurred while deleting the user.");
+                }
+
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"An error occurred while deleting data: {ex.Message}");
+                return StatusCode(500, "An error occurred while deleting the user.");
             }
         }
 

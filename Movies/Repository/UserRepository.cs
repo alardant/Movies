@@ -7,16 +7,25 @@ using MovieMaker.Services;
 namespace MovieMaker.Repository
 {
     /// <summary>
-    /// Repository for managing sers.
+    /// Repository for managing users.
     /// </summary>
     public class UserRepository
     {
         private readonly DataContext _context;
         private UserManager<User> _userManager;
-        public UserRepository(DataContext context, UserManager<User> userManager)
+        private AuthService _authService;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="UserRepository"/> class.
+        /// </summary>
+        /// <param name="context">The <see cref="DataContext"/> used for database operations.</param>
+        /// <param name="userManager">The <see cref="UserManager{TUser}"/> used for user management.</param>
+        /// <param name="authService">The <see cref="AuthService"/> providing authentication-related functionality.</param>
+        public UserRepository(DataContext context, UserManager<User> userManager, AuthService authService)
         {
             _context = context;
             _userManager = userManager;
+            _authService = authService;
         }
 
         /// <summary>
@@ -36,6 +45,26 @@ namespace MovieMaker.Repository
         public async Task<ICollection<User>> GetAllUsersAsync()
         {
             return await _context.Users.ToListAsync();
+        }
+
+        /// <summary>
+        /// Creates a new user asynchronously.
+        /// </summary>
+        /// <param name="user">The user to be created.</param>
+        /// /// /// <param name="password">The user password.</param>
+        /// <returns>True if the user is created successfully; otherwise, false.</returns>
+        public async Task<bool> CreateUserAsync(User user, string password)
+        {
+            var isUserAdmin = user.IsUserAdmin;
+
+            if (isUserAdmin)
+            {
+                await _authService.AssignRolesAsync(user, isUserAdmin);
+
+            }
+
+            await _userManager.CreateAsync(user, password);
+            return Save();
         }
 
         /// <summary>
@@ -59,6 +88,24 @@ namespace MovieMaker.Repository
                 }
             }
 
+            return Save();
+        }
+
+        /// <summary>
+        /// Delete an existing user asynchronously.
+        /// </summary>
+        /// <param name="id">The Id of the existing user.</param>
+        /// <returns>True if the user is deleted successfully; otherwise, false.</returns>
+        public async Task<bool> DeleteUserAsync(string id)
+        {
+            var user = await GetUserByIdAsync(id);
+
+            if (user == null)
+            {
+                return false;
+            }
+
+            await _userManager.DeleteAsync(user);
             return Save();
         }
 
