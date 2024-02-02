@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
+﻿using Movies.Models;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace MovieMaker.Models
 {

@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using MovieMaker.Models;
-using MovieMaker.Data;
+using Movies.Data;
+using Movies.Models;
 
 namespace MovieMaker.Repository
 {
@@ -11,10 +12,6 @@ namespace MovieMaker.Repository
     {
         private readonly DataContext _context;
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="MovieRepository"/> class.
-        /// </summary>
-        /// <param name="context">The <see cref="DataContext"/> used for database operations.</param>
         public MovieRepository(DataContext context)
         {
             _context = context;

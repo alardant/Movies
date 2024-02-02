@@ -2,16 +2,11 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Movies.Data;
-using MovieMaker.Models;
-using MovieMaker.Repository;
+using Movies.Models;
+using Movies.Repository;
 using Serilog;
 using System.Reflection;
 using System.IO;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.IdentityModel.Tokens;
-using System.Text;
-using MovieMaker.Services;
-using MovieMaker.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -48,41 +43,8 @@ builder.Services.AddSwaggerGen( c =>
     c.IncludeXmlComments(xmlPath);
 });
 
-// Set Identity config
-builder.Services.AddIdentity<IdentityUser, IdentityRole>(options =>
-{
-    options.Password.RequiredLength = 5;
-    options.SignIn.RequireConfirmedAccount = false;
-    options.SignIn.RequireConfirmedEmail = false;
-    options.SignIn.RequireConfirmedPhoneNumber = false;
-}).AddEntityFrameworkStores<DataContext>()
-  .AddDefaultTokenProviders();
-
-// Set Jwt Token
-builder.Services.AddAuthentication(options =>
-{
-    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-}).AddJwtBearer(options =>
-{
-    options.TokenValidationParameters = new TokenValidationParameters()
-    {
-        ValidateActor = true,
-        ValidateIssuer = true,
-        ValidateAudience = true,
-        RequireExpirationTime = true,
-        ValidateIssuerSigningKey = true,
-        ValidIssuer = builder.Configuration["Jwt:Issuer"],
-        ValidAudience = builder.Configuration["Jwt:Audience"],
-        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
-    };
-});
-
 builder.Services.AddScoped<MovieRepository>();
 builder.Services.AddScoped<UserRepository>();
-builder.Services.AddScoped<AuthService>();
-builder.Services.AddScoped<MovieService>();
-builder.Services.AddScoped<UserService>();
 
 var app = builder.Build();
 

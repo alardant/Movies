@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace Movies.Migrations
+namespace MovieMaker.Migrations
 {
     public partial class AddUsers : Migration
     {

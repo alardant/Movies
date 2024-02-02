@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using MovieMaker.Models;
+using Movies.Models;
 
 namespace MovieMaker.Data
 {

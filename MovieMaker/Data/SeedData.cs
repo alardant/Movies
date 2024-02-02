@@ -1,24 +1,24 @@
 ﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
 using MovieMaker.Models;
+using Movies.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using MovieMaker.Data;
 
-namespace Movies.Data
+namespace MovieMaker.Data
 {
     public class SeedData
     {
-        private readonly UserManager<IdentityUser> _userManager;
+        private readonly UserManager<User> _userManager;
         private readonly DataContext _dataContext;
         private readonly RoleManager<IdentityRole> _roleManager;
         private readonly ILogger<SeedData> _logger;
 
         public SeedData(
-            UserManager<IdentityUser> userManager,
+            UserManager<User> userManager,
             DataContext dataContext,
             RoleManager<IdentityRole> roleManager,
             ILogger<SeedData> logger)
