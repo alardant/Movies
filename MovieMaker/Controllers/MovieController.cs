@@ -7,6 +7,7 @@ using Movies.Repository;
 using Serilog.Filters;
 using System.Globalization;
 using System.Security.Claims;
+using AutoMapper;
 
 namespace Movies.Controllers
 {
@@ -18,11 +19,21 @@ namespace Movies.Controllers
         private readonly MovieRepository _movieRepository;
         private readonly UserRepository _userRepository;
         private readonly ILogger<MovieController> _logger;
-        public MovieController(MovieRepository movieRepository, UserRepository userRepository, ILogger<MovieController> logger)
+        private readonly IMapper _mapper;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="MovieController"/> class.
+        /// </summary>
+        /// <param name="movieRepository">The movie repository.</param>
+        /// <param name="userRepository">The user repository.</param>
+        /// <param name="logger">The logger.</param>
+        /// <param name="mapper">The mapper.</param>
+        public MovieController(MovieRepository movieRepository, UserRepository userRepository, ILogger<MovieController> logger, IMapper mapper)
         {
             _movieRepository = movieRepository;
             _logger = logger;
             _userRepository = userRepository;
+            _mapper = mapper;
         }
 
         /// <summary>
@@ -35,12 +46,7 @@ namespace Movies.Controllers
             try
             {
                 var movies = await _movieRepository.GetAllMoviesAsync();
-                var moviesDto = new List<MovieDto>();
-                foreach (Movie movie in movies)
-                {
-                    var movieDto = ConvertToMovieDto(movie);
-                    moviesDto.Add(movieDto);
-                }
+                var moviesDto = _mapper.Map<List<MovieDto>>(movies);
                 return Ok(moviesDto);
             }
             catch (Exception ex)
@@ -67,7 +73,7 @@ namespace Movies.Controllers
                     _logger.LogError($"Movie with ID {id} not found.");
                     return NotFound($"An error occurred while fetching the movie.");
                 }
-                var movieDto = ConvertToMovieDto(movie);
+                var movieDto = _mapper.Map<MovieDto>(movie);
                 return Ok(movieDto);
             }
             catch (Exception ex)
@@ -102,17 +108,7 @@ namespace Movies.Controllers
 
             try
             {
-                var movie = new Movie
-                {
-                    Id = movieDto.Id,
-                    Title = movieDto.Title,
-                    Description = movieDto.Description,
-                    Author = movieDto.Author,
-                    Genre = Enum.Parse<MovieGenre>(movieDto.Genre), // parse the value to convert them to appropriate types
-                    DateOfRelease = DateTime.ParseExact(movieDto.DateOfRelease, "dd-MM-yyyy", CultureInfo.InvariantCulture), // parse the value to convert them to appropriate types
-                    UserId = LoggedUserId,
-                    User = loggedUser
-                };
+                var movie = _mapper.Map<Movie>(movieDto);
 
                 var isMovieCreated = await _movieRepository.CreateMovieAsync(movie);
 
@@ -121,8 +117,8 @@ namespace Movies.Controllers
                     _logger.LogError($"An error occurred during creating data");
                     return StatusCode(500, "An error occurred while creating the movie.");
                 }
-
-                return Ok(movie);
+                var createdMovieDto = _mapper.Map<MovieDto>(movie);
+                return Ok(createdMovieDto);
 
             }
             catch (Exception ex)
@@ -147,10 +143,10 @@ namespace Movies.Controllers
                 return NotFound("an error occurred while updating the movie.");
             }
 
-            var movieToDelete = await _movieRepository.GetMovieByIdAsync(id);
+            var movieToUpdate = await _movieRepository.GetMovieByIdAsync(id);
             var LoggedUserId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
-            if (LoggedUserId == null || LoggedUserId != movieToDelete.UserId)
+            if (LoggedUserId == null || LoggedUserId != movieToUpdate.UserId)
             {
                 return BadRequest("An error occurred while updating the movie.");
             }
@@ -163,11 +159,7 @@ namespace Movies.Controllers
             try
             {
                 var movie = await _movieRepository.GetMovieByIdAsync(id);
-                movie.Title = movieDto.Title;
-                movie.Description = movieDto.Description;
-                movie.Author = movieDto.Author;
-                movie.Genre = Enum.Parse<MovieGenre>(movieDto.Genre); // parse the value to convert them to appropriate types
-                movie.DateOfRelease = DateTime.ParseExact(movieDto.DateOfRelease, "dd-MM-yyyy", CultureInfo.InvariantCulture); // parse the value to convert them to appropriate types
+                _mapper.Map(movieDto, movie);
 
                 var isMovieUpdated = await _movieRepository.UpdateMovieAsync(movie);
 
@@ -176,7 +168,8 @@ namespace Movies.Controllers
                     _logger.LogError($"An error occurred during updating data");
                     return StatusCode(500, "An error occurred while updating the movie.");
                 }
-                return Ok(movie);
+                var updatedMovieDto = _mapper.Map<MovieDto>(movie);
+                return Ok(updatedMovieDto);
             }
             catch (Exception ex)
             {
@@ -203,15 +196,9 @@ namespace Movies.Controllers
                     i.Author.ToLower().Contains(str.ToLower()))
                 .ToList();
 
-                var filteredmoviesDto = new List<MovieDto>();
+                var filteredMoviesDto = _mapper.Map<List<MovieDto>>(filteredMovies);
 
-                foreach (Movie filteredMovie in filteredMovies)
-                {
-                    var movieDto = ConvertToMovieDto(filteredMovie);
-                    filteredmoviesDto.Add(movieDto);
-                }
-
-                return Ok(filteredmoviesDto);
+                return Ok(filteredMoviesDto);
             }
             catch (Exception ex)
             {
@@ -224,13 +211,13 @@ namespace Movies.Controllers
         /// Deletes a movie by ID.
         /// </summary>
         /// <param name="id">The ID of the movie to delete.</param>
-        /// <returns>Result of the delete operation.</returns>
+        /// <returns>True if the movie was deleted; false otherwise</returns>
         [Authorize]
         [HttpDelete("DeleteMovie")]
         public async Task<IActionResult> DeleteMovie(int id)
         {
 
-            if (!await _movieRepository.DoesMovieExists(id)) 
+            if (!await _movieRepository.DoesMovieExists(id))
             {
                 return NotFound("An error occurred while deleting the movie.");
             }
@@ -253,31 +240,14 @@ namespace Movies.Controllers
                     return StatusCode(500, "An error occurred while deleting the movie.");
                 }
 
-                return Ok("Movie successfully deleted");
+                return Ok(isMovieDeleted);
 
-            } catch (Exception ex)
+            }
+            catch (Exception ex)
             {
                 _logger.LogError($"An error occurred during deleting data: {ex.Message}");
                 return StatusCode(500, "An error occurred while deleting the movie.");
             }
-        }
-
-        /// <summary>
-        /// Converts a <see cref="Movie"/> object to a <see cref="MovieDto"/>.
-        /// </summary>
-        /// <param name="movie">The movie object.</param>
-        /// <returns>The movie DTO.</returns>
-        private MovieDto ConvertToMovieDto(Movie movie)
-        {
-            return new MovieDto
-            {
-                Id = movie.Id,
-                Title = movie.Title,
-                Description = movie.Description,
-                Author = movie.Author,
-                Genre = movie.Genre.ToString(),
-                DateOfRelease = movie.DateOfRelease.ToString("dd-MM-yyyy")
-            };
         }
     }
 }

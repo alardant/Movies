@@ -7,6 +7,9 @@ using Movies.Repository;
 using Serilog;
 using System.Reflection;
 using System.IO;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -43,8 +46,30 @@ builder.Services.AddSwaggerGen( c =>
     c.IncludeXmlComments(xmlPath);
 });
 
+// Set Jwt Token
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+}).AddJwtBearer(options =>
+{
+    options.TokenValidationParameters = new TokenValidationParameters()
+    {
+        ValidateActor = true,
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        RequireExpirationTime = true,
+        ValidateIssuerSigningKey = true,
+        ValidIssuer = builder.Configuration["Jwt:Issuer"],
+        ValidAudience = builder.Configuration["Jwt:Audience"],
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
+    };
+});
+
+
 builder.Services.AddScoped<MovieRepository>();
 builder.Services.AddScoped<UserRepository>();
+builder.Services.AddAutoMapper(typeof(MappingProfile));
 
 var app = builder.Build();
 
