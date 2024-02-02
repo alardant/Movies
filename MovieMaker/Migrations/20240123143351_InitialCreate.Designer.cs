@@ -9,7 +9,7 @@ using Movies.Data;
 
 #nullable disable
 
-namespace MovieMaker.Migrations
+namespace Movies.Migrations
 {
     [DbContext(typeof(DataContext))]
     [Migration("20240123143351_InitialCreate")]

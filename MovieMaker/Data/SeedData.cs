@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
-using MovieMaker.Models;
+using Movies.Models;
 using Movies.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -8,7 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace MovieMaker.Data
+namespace Movies.Data
 {
     public class SeedData
     {

@@ -1,4 +1,4 @@
-﻿namespace MovieMaker.DTO
+﻿namespace Movies.DTO
 {
     public class MovieDto
     {

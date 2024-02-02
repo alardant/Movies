@@ -8,7 +8,7 @@ using Movies.Data;
 
 #nullable disable
 
-namespace MovieMaker.Migrations
+namespace Movies.Migrations
 {
     [DbContext(typeof(DataContext))]
     partial class DataContextModelSnapshot : ModelSnapshot

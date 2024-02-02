@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using MovieMaker.Models;
+using Movies.Models;
 using Movies.Data;
 using Movies.DTO;
 using Movies.Repository;
@@ -8,7 +8,7 @@ using Serilog.Filters;
 using System.Globalization;
 using System.Security.Claims;
 
-namespace MovieMaker.Controllers
+namespace Movies.Controllers
 {
     /// <summary>
     /// Controller for managing movie-related operations.

@@ -2,7 +2,7 @@
 using Movies.Data;
 using Movies.Models;
 
-namespace MovieMaker.Repository
+namespace Movies.Repository
 {
     /// <summary>
     /// Repository for managing sers.

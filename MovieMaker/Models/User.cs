@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Identity;
-using MovieMaker.Models;
+using Movies.Models;
 
-namespace MovieMaker.Models
+namespace Movies.Models
 {
     public class User : IdentityUser
     {

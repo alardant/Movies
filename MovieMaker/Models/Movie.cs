@@ -1,7 +1,7 @@
 ﻿using Movies.Models;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace MovieMaker.Models
+namespace Movies.Models
 {
     public class Movie
     {
