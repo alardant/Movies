@@ -16,7 +16,7 @@ namespace Movies.Services
     {
 
         private readonly RoleManager<IdentityRole> _roleManager;
-        private readonly UserManager<IdentityUser> _userManager;
+        private readonly UserManager<User> _userManager;
         private readonly IConfiguration _config;
 
         /// <summary>
@@ -25,7 +25,7 @@ namespace Movies.Services
         /// <param name="roleManager">The <see cref="RoleManager{TRole}"/> used for role management.</param>
         /// <param name="userManager">The <see cref="UserManager{TUser}"/> used for user management.</param>
         /// <param name="config">The <see cref="IConfiguration"/> used for configuration settings.</param>
-        public AuthService(RoleManager<IdentityRole> roleManager, UserManager<IdentityUser> userManager, IConfiguration config)
+        public AuthService(RoleManager<IdentityRole> roleManager, UserManager<User> userManager, IConfiguration config)
         {
             _roleManager = roleManager;
             _userManager = userManager;

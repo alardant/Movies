@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Movies.Models;
-using Movies.Models;
 
 namespace Movies.Data
 {

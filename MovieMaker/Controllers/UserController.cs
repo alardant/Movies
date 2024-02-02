@@ -21,7 +21,7 @@ namespace Movies.Controllers
     public class UserController : ControllerBase
     {
 
-        private readonly SignInManager<IdentityUser> _signInManager;
+        private readonly SignInManager<User> _signInManager;
         private readonly AuthService _authService;
         private readonly UserRepository _userRepository;
         private readonly ILogger<UserController> _logger;
@@ -30,12 +30,12 @@ namespace Movies.Controllers
         /// <summary>
         /// Initializes a new instance of the <see cref="UserController"/> class.
         /// </summary>
-        /// <param name="signInManager">The <see cref="SignInManager{IdentityUser}"/> for handling user sign-in operations.</param>
+        /// <param name="signInManager">The <see cref="SignInManager{User}"/> for handling user sign-in operations.</param>
         /// <param name="authService">The service providing authentication-related functionality.</param>
         /// <param name="logger">The logger for capturing and logging controller-related events.</param>
         /// <param name="userRepository">The repository for managing user-related data.</param>
         /// /// <param name="mapper">The mapper.</param>
-        public UserController(SignInManager<IdentityUser> signInManager, AuthService authService, ILogger<UserController> logger, UserRepository userRepository, IMapper mapper)
+        public UserController(SignInManager<User> signInManager, AuthService authService, ILogger<UserController> logger, UserRepository userRepository, IMapper mapper)
         {
             _signInManager = signInManager;
             _authService = authService;
@@ -220,13 +220,23 @@ namespace Movies.Controllers
         /// </summary>
         /// <param name="id">the Id of the user to delete</param>
         /// <returns>True if the user is deleted; false otherwise</returns>
+        [Authorize]
+        [HttpDelete("DeleteUser/{id}")]
         public async Task<IActionResult> DeleteUser(string id)
         {
-            if (string.IsNullOrWhiteSpace(id))
+
+            if (!await _userRepository.DoesUserExists(id))
             {
-                return BadRequest("An error occurred while deleting the user.");
+                return NotFound("an error occurred while updating the user.");
             }
 
+            var userToDelete = await _userRepository.GetUserByIdAsync(id);
+            var LoggedUserId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            if (LoggedUserId == null || LoggedUserId != userToDelete.Id)
+            {
+                return Unauthorized("An error occurred while updating the user.");
+            }
 
             try
             {

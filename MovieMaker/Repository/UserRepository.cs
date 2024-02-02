@@ -21,7 +21,7 @@ namespace Movies.Repository
         /// Initializes a new instance of the <see cref="UserRepository"/> class.
         /// </summary>
         /// <param name="context">The <see cref="DataContext"/> used for database operations.</param>
-        /// <param name="userManager">The <see cref="UserManager{TUser}"/> used for user management.</param>
+        /// <param name="userManager">The <see cref="UserManager{TIdentityUser}"/> used for user management.</param>
         /// <param name="authService">The <see cref="AuthService"/> providing authentication-related functionality.</param>
         public UserRepository(DataContext context, UserManager<User> userManager, AuthService authService)
         {
@@ -57,16 +57,21 @@ namespace Movies.Repository
         /// <returns>True if the user is created successfully; otherwise, false.</returns>
         public async Task<bool> CreateUserAsync(User user, string password)
         {
-            var isUserAdmin = user.IsUserAdmin;
+            var result = await _userManager.CreateAsync(user, password);
 
-            if (isUserAdmin)
+            if (result.Succeeded)
             {
-                await _authService.AssignRolesAsync(user, isUserAdmin);
+                var isUserAdmin = user.IsUserAdmin;
 
+                if (isUserAdmin)
+                {
+                    await _authService.AssignRolesAsync(user, isUserAdmin);
+                }
+
+                return Save();
             }
 
-            await _userManager.CreateAsync(user, password);
-            return Save();
+            return false;
         }
 
         /// <summary>
