@@ -10,6 +10,7 @@ using System.IO;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using System.Text;
+using Movies.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -69,6 +70,7 @@ builder.Services.AddAuthentication(options =>
 
 builder.Services.AddScoped<MovieRepository>();
 builder.Services.AddScoped<UserRepository>();
+builder.Services.AddScoped<AuthService>();
 builder.Services.AddAutoMapper(typeof(MappingProfile));
 
 var app = builder.Build();
