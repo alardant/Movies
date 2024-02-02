@@ -47,6 +47,16 @@ builder.Services.AddSwaggerGen( c =>
     c.IncludeXmlComments(xmlPath);
 });
 
+// Set Identity config
+builder.Services.AddIdentity<IdentityUser, IdentityRole>(options =>
+{
+    options.Password.RequiredLength = 5;
+    options.SignIn.RequireConfirmedAccount = false;
+    options.SignIn.RequireConfirmedEmail = false;
+    options.SignIn.RequireConfirmedPhoneNumber = false;
+}).AddEntityFrameworkStores<DataContext>()
+  .AddDefaultTokenProviders();
+
 // Set Jwt Token
 builder.Services.AddAuthentication(options =>
 {
@@ -66,7 +76,6 @@ builder.Services.AddAuthentication(options =>
         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
     };
 });
-
 
 builder.Services.AddScoped<MovieRepository>();
 builder.Services.AddScoped<UserRepository>();

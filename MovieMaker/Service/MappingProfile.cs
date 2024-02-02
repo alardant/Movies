@@ -4,6 +4,9 @@ using Movies.Models;
 
 public class MappingProfile : Profile
 {
+    /// <summary>
+    /// Service for mapping.
+    /// </summary>
     public MappingProfile()
     {
         CreateMap<Movie, MovieDto>()

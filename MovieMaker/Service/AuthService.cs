@@ -4,11 +4,8 @@ using Movies.DTO;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
-using Movies.DTO;
 using Movies.Models;
 using Movies.Repository;
-using Movies.DTO;
-using Movies.Models;
 
 namespace Movies.Services
 {
