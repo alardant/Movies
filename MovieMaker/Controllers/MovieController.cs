@@ -83,24 +83,22 @@ namespace Movies.Controllers
             }
         }
 
+        [Authorize]
+        [HttpPost("Test")]
+        public string Test()
+        {
+            return "Test";
+        }
+
         /// <summary>
         /// Creates a new movie.
         /// </summary>
         /// <param name="movieDto">The movie data.</param>
         /// <returns>The newly created movie.</returns>
         [Authorize]
-        [HttpPost("CreateReview")]
+        [HttpPost("CreateMovie")]
         public async Task<IActionResult> CreateMovie(MovieDto movieDto)
         {
-            // Get the currently logged-in user's info
-            var LoggedUserId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            var loggedUser = await _userRepository.GetUserByIdAsync(LoggedUserId);
-
-            if (LoggedUserId == null || loggedUser == null)
-            {
-                return BadRequest("Échec de la création du commentaire.");
-            }
-
             if (!ModelState.IsValid)
             {
                 return BadRequest("Échec de la création du commentaire.");
@@ -108,7 +106,25 @@ namespace Movies.Controllers
 
             try
             {
-                var movie = _mapper.Map<Movie>(movieDto);
+                var userId = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                var user = await _userRepository.GetUserByIdAsync(userId);
+
+                if (userId == null ||user == null)
+                {
+                    return BadRequest("User cannot be retrieved");
+                }
+
+                var movie = new Movie
+
+                {
+                    Title = movieDto.Title,
+                    Description = movieDto.Description,
+                    DateOfRelease = movieDto.DateOfRelease,
+                    Author = movieDto.Author,
+                    Genre = movieDto.Genre,
+                    UserId = userId,
+                    User = user
+                };
 
                 var isMovieCreated = await _movieRepository.CreateMovieAsync(movie);
 

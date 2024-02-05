@@ -2,6 +2,7 @@
 using Movies.Models;
 using Movies.Data;
 using Movies.Models;
+using Movies.Controllers;
 
 namespace Movies.Repository
 {
@@ -11,10 +12,12 @@ namespace Movies.Repository
     public class MovieRepository
     {
         private readonly DataContext _context;
+        private readonly ILogger<MovieRepository> _logger;
 
-        public MovieRepository(DataContext context)
+        public MovieRepository(DataContext context, ILogger<MovieRepository> logger)
         {
             _context = context;
+            _logger = logger;
         }
 
         /// <summary>
@@ -55,7 +58,7 @@ namespace Movies.Repository
         {
 
             _context.Movies.Add(movie);
-            return Save();
+            return await Save();
         }
 
         /// <summary>
@@ -67,7 +70,7 @@ namespace Movies.Repository
         {
             _context.Update(movie);
             _context.SaveChanges();
-            return Save();
+            return await Save();
         }
 
         /// <summary>
@@ -80,7 +83,7 @@ namespace Movies.Repository
             var movie = _context.Movies.FirstOrDefaultAsync(i => i.Id == id);
             _context.Remove(movie);
             _context.SaveChanges();
-            return Save();
+            return await Save();
         }
 
         /// <summary>
@@ -102,10 +105,18 @@ namespace Movies.Repository
         /// Saves changes to the database.
         /// </summary>
         /// <returns>True if changes are saved successfully; otherwise, false.</returns>
-        public bool Save()
+        public async Task<bool> Save()
         {
-            var saved = _context.SaveChanges();
-            return saved > 0 ? true : false;
+            try
+            {
+                await _context.SaveChangesAsync();
+                return true;
+            } catch (DbUpdateException ex)
+            {
+                _logger.LogError($"Error saving changes to the database: {ex.Message}");
+                return false;
+            }
+
         }
 
 

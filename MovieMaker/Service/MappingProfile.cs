@@ -9,10 +9,7 @@ public class MappingProfile : Profile
     /// </summary>
     public MappingProfile()
     {
-        CreateMap<Movie, MovieDto>()
-            .ForMember(dest => dest.Genre, opt => opt.MapFrom(src => src.Genre.ToString()))
-            .ForMember(dest => dest.DateOfRelease, opt => opt.MapFrom(src => src.DateOfRelease.ToString("dd-MM-yyyy")));
-
+        CreateMap<Movie, MovieDto>();
         CreateMap<User, UserToDisplayDto>();
         CreateMap<UserDto, User>();
         CreateMap<UserLoginDto, User>();

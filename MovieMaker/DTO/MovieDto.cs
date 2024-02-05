@@ -14,10 +14,10 @@ namespace Movies.DTO
         public string Author { get; set; }
 
         [Required]
-        public string Genre { get; set; }
+        public MovieGenre Genre { get; set; }
 
         [Required]
-        public string DateOfRelease { get; set; }
+        public DateTime DateOfRelease { get; set; }
     }
 
 }
