@@ -114,17 +114,10 @@ namespace Movies.Controllers
                     return BadRequest("User cannot be retrieved");
                 }
 
-                var movie = new Movie
-
-                {
-                    Title = movieDto.Title,
-                    Description = movieDto.Description,
-                    DateOfRelease = movieDto.DateOfRelease,
-                    Author = movieDto.Author,
-                    Genre = movieDto.Genre,
-                    UserId = userId,
-                    User = user
-                };
+                Movie movie = _mapper.Map<Movie>(movieDto);
+                movie.UserId = userId;
+                movie.User = user;
+                movie.DateOfRelease = movieDto.DateOfRelease;
 
                 var isMovieCreated = await _movieRepository.CreateMovieAsync(movie);
 
@@ -133,8 +126,8 @@ namespace Movies.Controllers
                     _logger.LogError($"An error occurred during creating data");
                     return StatusCode(500, "An error occurred while creating the movie.");
                 }
-                var createdMovieDto = _mapper.Map<MovieDto>(movie);
-                return Ok(createdMovieDto);
+                
+                return Ok(movieDto);
 
             }
             catch (Exception ex)
@@ -151,7 +144,7 @@ namespace Movies.Controllers
         /// <param name="movieDto">The updated movie data.</param>
         /// <returns>The updated movie.</returns>
         [Authorize]
-        [HttpPut("UpdateReview/{id}")]
+        [HttpPut("UpdateMovie/{id}")]
         public async Task<IActionResult> UpdateMovie(int id, MovieDto movieDto)
         {
             if (!await _movieRepository.DoesMovieExists(id))

@@ -80,8 +80,15 @@ namespace Movies.Repository
         /// <returns>True if the movie is deleted successfully; otherwise, false.</returns>
         public async Task<bool> DeleteMovieAsync(int id)
         {
-            var movie = _context.Movies.FirstOrDefaultAsync(i => i.Id == id);
-            _context.Remove(movie);
+            var movieToDelete = await _context.Movies.FindAsync(id);
+
+            if (movieToDelete == null)
+            {
+                return false;
+            }
+
+
+            _context.Remove(movieToDelete);
             _context.SaveChanges();
             return await Save();
         }

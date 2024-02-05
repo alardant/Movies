@@ -17,6 +17,7 @@ namespace Movies.DTO
         public MovieGenre Genre { get; set; }
 
         [Required]
+        [DataType(DataType.Date)]
         public DateTime DateOfRelease { get; set; }
     }
 
