@@ -43,7 +43,7 @@ builder.Services.AddSwaggerGen( c =>
 });
 
 // Set Identity config
-builder.Services.AddIdentity<IdentityUser, IdentityRole>(options =>
+builder.Services.AddIdentity<User, IdentityRole>(options =>
 {
     options.Password.RequiredLength = 5;
     options.SignIn.RequireConfirmedAccount = false;
@@ -87,7 +87,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
+app.UseAuthentication()
 app.UseAuthorization();
 
 app.MapControllers();

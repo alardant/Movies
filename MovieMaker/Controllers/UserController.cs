@@ -68,28 +68,27 @@ namespace Movies.Controllers
         /// <summary>
         /// Login a user 
         /// </summary>
-        /// <param name="userDto">the user data</param>
+        /// <param name="userLoginDto">the user data</param>
         /// <returns>A Jwt token as a string</returns>
         [HttpPost("Login")]
-        public async Task<IActionResult> Login(UserDto userDto)
+        public async Task<IActionResult> Login(UserLoginDto userLoginDto)
         {
-            if (!ModelState.IsValid)
+            if (!ModelState.IsValid || userLoginDto == null || string.IsNullOrEmpty(userLoginDto.Password))
             {
                 return BadRequest("Unable to Login");
             }
 
             try
             {
-
-                var user = _mapper.Map<User>(userDto);
-                var result = await _authService.Login(user);
+                var result = await _authService.Login(userLoginDto);
 
                 if (!result)
                 {
                     return Unauthorized("An error occurred while logging in");
                 }
 
-                var tokenString = await _authService.GenerateJwtTokenAsString(user);
+                var identityUser = await _authService.GetUserForLogin(userLoginDto);
+                var tokenString = await _authService.GenerateJwtTokenAsString(identityUser);
 
                 return Ok(tokenString);
             }

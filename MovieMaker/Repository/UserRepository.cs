@@ -137,8 +137,14 @@ namespace Movies.Repository
         /// <returns>True if changes are saved successfully; otherwise, false.</returns>
         public bool Save()
         {
-            var saved = _context.SaveChanges();
-            return saved > 0 ? true : false;
+            try
+            {
+                var saved = _context.SaveChanges();
+                return true;
+            } catch
+            {
+                return false;
+            }
         }
     }
 }
