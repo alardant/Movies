@@ -7,6 +7,7 @@ using System.Text;
 using Movies.Models;
 using Movies.Repository;
 using Movies.Controllers;
+using Movies.Service;
 
 namespace Movies.Services
 {
@@ -21,6 +22,7 @@ namespace Movies.Services
         private readonly IConfiguration _config;
         private readonly ILogger<UserController> _logger;
         private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly TokenBlacklistService _tokenBlacklistService;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AuthService"/> class.
@@ -30,13 +32,15 @@ namespace Movies.Services
         /// <param name="config">The <see cref="IConfiguration"/> used for configuration settings.</param>
         /// <param name="logger">The logger for capturing and logging controller-related events.</param>
         /// <param name="httpContextAccessor">The <see cref="IHttpContextAccessor"/> used for accessing the HTTP context.</param>
-        public AuthService(RoleManager<IdentityRole> roleManager, UserManager<User> userManager, IConfiguration config, ILogger<UserController> logger, IHttpContextAccessor httpContextAccessor)
+        /// /// <param name="tokenBlacklistService">The <see cref="TokenBlacklistService"/> providing token functionality.</param>
+        public AuthService(RoleManager<IdentityRole> roleManager, UserManager<User> userManager, IConfiguration config, ILogger<UserController> logger, IHttpContextAccessor httpContextAccessor, TokenBlacklistService tokenBlacklistService)
         {
             _roleManager = roleManager;
             _userManager = userManager;
             _config = config;
             _logger = logger;
             _httpContextAccessor = httpContextAccessor;
+            _tokenBlacklistService = tokenBlacklistService;
         }
 
         /// <summary>
@@ -88,6 +92,11 @@ namespace Movies.Services
                 new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
             };
 
+            if (user.IsUserAdmin)
+            {
+                claims.Add(new Claim(ClaimTypes.Role, "Admin"));
+            }
+
             var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config.GetSection("Jwt:Key").Value));
             var signingCred = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha512);
 
@@ -133,6 +142,23 @@ namespace Movies.Services
             {
                 await _userManager.AddToRoleAsync(user, "User");
             }
+        }
+
+        public async Task<bool> RemoveToken()
+        {
+            try 
+            { 
+            var token = _httpContextAccessor.HttpContext.Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
+
+            // Check if the token is already blacklisted
+            var isTokenBlacklisted = await _tokenBlacklistService.IsTokenBlacklistedAsync(token);
+
+                return true;
+             } catch
+            {
+                return false;
+            }
+
         }
     }
 

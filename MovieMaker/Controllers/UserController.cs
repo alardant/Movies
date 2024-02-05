@@ -110,6 +110,14 @@ namespace Movies.Controllers
         {
             try
             {
+                var result = await _authService.RemoveToken();
+
+                if (!result)
+                {
+                    _logger.LogError($"An error occurred while removing token");
+                    return StatusCode(500, "An error occurred while logging out.");
+                }
+
                 await _signInManager.SignOutAsync();
                 return Ok("User successfully log out");
 

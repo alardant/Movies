@@ -77,6 +77,15 @@ builder.Services.AddScoped<UserRepository>();
 builder.Services.AddScoped<AuthService>();
 builder.Services.AddAutoMapper(typeof(MappingProfile));
 
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("Admin", policy =>
+    {
+        // Add requirements or authentication logic here if needed
+        policy.RequireRole("Admin"); // Specify role-based requirement if applicable
+    });
+});
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
